@@ -1,0 +1,39 @@
+name: compile-mql
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile MT5 EA
+        id: mt5
+        uses: fx31337/MQL-Compile-Action@v1
+        with:
+          script: mt5/AIPredictChannel.mq5
+
+      - name: Compile MT4 EA
+        id: mt4
+        uses: fx31337/MQL-Compile-Action@v1
+        with:
+          script: mt4/AIPredictChannel.mq4
+
+      - name: Show logs
+        if: always()
+        run: |
+          cat "mt5/AIPredictChannel.log" 2>/dev/null || true
+          cat "mt4/AIPredictChannel.log" 2>/dev/null || true
+
+      - name: Upload compiled binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-eas
+          path: |
+            mt5/*.ex5
+            mt4/*.ex4
+          if-no-files-found: error
